@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Promise原理及实现</title>
+</head>
+
+<body>
+    <h2>Promise polyfill--APromise</h2>
+    <p>拥有原生 Promise 全功能--低版本IE请搭配 es5shim</p>
+    <p>且实现了Promise.deferred </p>
+    <p>
+        Deferred对象很好用，比Promise好用。其实他也是个promise
+        <br /> Promise用法需要使用new Promise(fn)把原始的函数包起来，
+        <br /> 而Deferred对象，则可以在一个正常的函数内声明，而不需要把整个函数包起来
+    </p>
+    <p>打开
+        <b>console</b>, 对照本页面源码查看代码</p>
+</body>
+<script src="promise.js"></script>
+<script>
+    // 直接覆盖原生 Promise 以便于测试
+    window.Promise = window.APromise;
+    // 接收一个value，返回一个promise
+    function doubleUp(value) {
+        var retPromise = new Promise(function (resolve, reject) {
+            // reject(new Error("this promise is rejected"));
+            resolve(value * 2)
+        });
+        return retPromise;
+    }
+    function increment(value) {
+        return value + 1;
+    }
+    function output(value) {
+        console.log('output: ', value);// => (1 + 1) * 2
+    }
+    var promise = Promise.resolve(1);
+    promise
+        .then(increment)
+        //  dobleUp 返回了一个promise, 原生Promise正常执行，但自实现的Promise就出问题了(已改进，resolve的问题)
+        .then(doubleUp)
+        .then(output)
+        .catch(function (error) {
+            // promise chain中出现异常的时候会被调用
+            console.error(error);
+        });
+    var a = 100;
+    var pm = new Promise(function aa(resolve, reject) {
+        if (a < 1000) {
+            reject('太小了')
+        } else {
+            setTimeout(function () {
+                resolve(a);
+            }, 1000)
+        }
+    });
+    pm.then(function (val) {
+        console.log('pm:', val);
+    }, function (err) {
+        console.log('pm error:', err)
+    })
+    console.log(pm);
+    /**/
+    console.log(11111111111);
+    var p1 = new Promise(function (resolve, reject) {
+        setTimeout(function () {
+            resolve("one")
+        }, 2000);
+    });
+    var p2 = new Promise(function (resolve, reject) {
+        setTimeout(function () {
+            resolve("two")
+        }, 1000);
+    });
+    var p3 = new Promise(function (resolve, reject) {
+        setTimeout(function () {
+            resolve("three")
+        }, 3000);
+    });
+    var p4 = new Promise(function (resolve, reject) {
+        setTimeout(function () {
+            resolve("four")
+        }, 4000);
+    });
+    var p5 = new Promise(function (resolve, reject) {
+        setTimeout(() => {
+            reject("reject p5");
+        }, 5000);
+
+    });
+    // 由于有 p5 , 最终会失败并进入 catch
+    Promise.all([p1, p2, p3, p4, p5]).then(function (list) {
+        console.log(list);
+    }).catch(function (err) {
+        console.log(err, 'err')
+    });
+    // 这个没有 p5, 能最终成功
+    Promise.all([p1, p2, p3, p4, 322]).then(function (list) {
+        console.log(list);
+    }).catch(function (err) {
+        console.log(err, 'err')
+    });
+    // race , 所有参数是 promise
+    Promise.race([p1, p2, p3, p4]).then(function (res) {
+        console.log('race:', res);
+    });
+    // d1是一个比较正常的function，其中使用Deferred对象，同样实现了Promise类似的调用链方式
+    var d1 = function (dd) {
+        var defer = Promise.deferred();
+        setTimeout(function () {
+            defer.resolve(dd);
+        }, 1234);
+        // 实际上依然是返回了一个promise
+        return defer.promise;
+    }
+
+    d1('deferred').then(function (v) {
+        console.log(v);
+    })
+
+</script>
+
+</html>
