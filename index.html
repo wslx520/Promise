@@ -106,7 +106,8 @@
     Promise.race([p1, p2, p3, p4]).then(function (res) {
         console.log('race:', res);
     });
-    // d1是一个比较正常的function，其中使用Deferred对象，同样实现了Promise类似的调用链方式
+    // 下面是 deferred 的例子
+    // d1是一个比较正常的function, 接受普通的参数，其中使用Deferred对象，同样实现了Promise类似的调用链方式
     var d1 = function (dd) {
         var defer = Promise.deferred();
         setTimeout(function () {
@@ -117,7 +118,7 @@
     }
 
     d1('deferred').then(function (v) {
-        console.log(v);
+        console.log('deferred: ', v);
     })
 
 </script>

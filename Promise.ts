@@ -3,7 +3,7 @@ const APromise = (function () {
     const REJECTED: string = 'REJECTED';
     const PENDING: string = 'PENDING';
 
-    const isFunction = function (fn: any): boolean {
+    function isFunction(fn: any): boolean {
         return 'function' === typeof fn;
     }
     interface Resolve {
@@ -146,7 +146,7 @@ const APromise = (function () {
             return new Promise((resolve, reject) => {
                 let values: any[] = [];
                 let len: number = promises.length;
-                let operate = function (val: any, i: number) {
+                function operate(val: any, i: number) {
                     values[i] = val;
                     len--;
                     if (len <= 0) {
@@ -170,7 +170,7 @@ const APromise = (function () {
         static race(promises: Promise[]) {
             return new Promise((resolve, reject) => {
                 promises.forEach((pro: Promise, i: number) => {
-                    // 转换纯值为 promise 对象
+                    // 直接解决纯值
                     if (!(pro instanceof Promise) || !pro.then) {
                         try {
                             resolve(pro);
@@ -184,18 +184,19 @@ const APromise = (function () {
             })
         }
     }
-
+    // promise2 是 then 中生成的 promise, x 是 then的参数(onFulfiled或者onRejected) 执行后的结果, resolve与reject是 promise2 接收到的
+    // x 可能是普通值, 也可能是 另一个 promise. 当是另一个 promise 的时候, 需要解决它, 才能继续走
     function resolvePromise(promise2: Promise, x: any, resolve: Resolve, reject: Reject) {
         if (promise2 === x) {
             return reject(new TypeError('循环引用!'));
         }
         let called: boolean;
-        let toResolve = function () {
+        function toResolve() {
             if (called) return;
             called = true;
             return resolve(x);
         }
-        let toReject = function (err: any) {
+        function toReject(err: any) {
             if (called) return;
             called = true;
             // rejected
