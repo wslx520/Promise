@@ -2,9 +2,9 @@ var APromise = (function () {
     var FULFILED = 'FULFILED';
     var REJECTED = 'REJECTED';
     var PENDING = 'PENDING';
-    var isFunction = function (fn) {
+    function isFunction(fn) {
         return 'function' === typeof fn;
-    };
+    }
     var Promise = /** @class */ (function () {
         function Promise(executer) {
             this.status = PENDING;
@@ -103,11 +103,9 @@ var APromise = (function () {
         Promise.prototype["catch"] = function (onRejected) {
             return this.then(null, onRejected);
         };
-        ;
         Promise.prototype.fail = function (onRejected) {
             return this.then(null, onRejected);
         };
-        ;
         Promise.deferred = function () {
             var obj = {};
             obj.promise = new Promise(function (resolve, reject) {
@@ -130,13 +128,13 @@ var APromise = (function () {
             return new Promise(function (resolve, reject) {
                 var values = [];
                 var len = promises.length;
-                var operate = function (val, i) {
+                function operate(val, i) {
                     values[i] = val;
                     len--;
                     if (len <= 0) {
                         resolve(values);
                     }
-                };
+                }
                 promises.forEach(function (pro, i) {
                     // 如果是纯值, 直接解决
                     if (!pro.then || !(pro instanceof Promise)) {
@@ -153,7 +151,7 @@ var APromise = (function () {
         Promise.race = function (promises) {
             return new Promise(function (resolve, reject) {
                 promises.forEach(function (pro, i) {
-                    // 转换纯值为 promise 对象
+                    // 直接解决纯值
                     if (!(pro instanceof Promise) || !pro.then) {
                         try {
                             resolve(pro);
@@ -169,24 +167,26 @@ var APromise = (function () {
         };
         return Promise;
     }());
+    // promise2 是 then 中生成的 promise, x 是 then的参数(onFulfiled或者onRejected) 执行后的结果, resolve与reject是 promise2 接收到的
+    // x 可能是普通值, 也可能是 另一个 promise. 当是另一个 promise 的时候, 需要解决它, 才能继续走
     function resolvePromise(promise2, x, resolve, reject) {
         if (promise2 === x) {
             return reject(new TypeError('循环引用!'));
         }
         var called;
-        var toResolve = function () {
+        function toResolve() {
             if (called)
                 return;
             called = true;
             return resolve(x);
-        };
-        var toReject = function (err) {
+        }
+        function toReject(err) {
             if (called)
                 return;
             called = true;
             // rejected
             reject(err);
-        };
+        }
         if (x && (isFunction(x) || 'object' === typeof x)) {
             // 尽量保持 try...catch 中语句尽量少
             try {

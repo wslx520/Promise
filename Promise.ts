@@ -119,10 +119,10 @@ const APromise = (function () {
         }
         catch(onRejected: Reject) {
             return this.then(null, onRejected);
-        };
+        }
         fail(onRejected: Reject) {
             return this.then(null, onRejected);
-        };
+        }
         static deferred() {
             let obj: Defer = {};
             obj.promise = new Promise(function (resolve, reject) {
