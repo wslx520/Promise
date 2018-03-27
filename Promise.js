@@ -214,4 +214,5 @@ var APromise = (function () {
     }
     return Promise;
 })();
-// export default APromise; 
+// 去掉下一行的注释, 可进行 promises-aplus-tests 测试
+module.exports = APromise; 
